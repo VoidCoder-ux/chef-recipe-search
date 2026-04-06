@@ -1,4 +1,3 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest, NextResponse } from "next/server";
 
 const SYSTEM_PROMPT = `You are a world-class professional chef consultant with expertise in all global cuisines. You specialize in providing professional-grade recipes for trained culinary professionals, not home cooks.
@@ -70,15 +69,14 @@ Return your response as a valid JSON array of recipe objects. Each recipe must f
 
 export async function POST(request: NextRequest) {
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
-        { error: "GEMINI_API_KEY is not configured in environment variables." },
+        { error: "GROQ_API_KEY is not configured in environment variables." },
         { status: 500 }
       );
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
     const { query, filters, count = 3 } = await request.json();
 
     if (!query || query.trim().length === 0) {
@@ -108,9 +106,7 @@ export async function POST(request: NextRequest) {
         ? `Target ${filters.difficulty} difficulty level.`
         : "";
 
-    const userMessage = `${SYSTEM_PROMPT}
-
-Search for professional chef-level recipes for: "${query}"
+    const userMessage = `Search for professional chef-level recipes for: "${query}"
 
 ${languageInstruction}
 ${cuisineInstruction}
@@ -120,17 +116,30 @@ ${difficultyInstruction}
 Provide ${count} distinct professional recipe variations. Each must be unique in technique, origin, or approach.
 Return ONLY a valid JSON array with no additional text or markdown.`;
 
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash",
-      generationConfig: {
-        maxOutputTokens: 8000,
-        temperature: 0.7,
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: userMessage },
+        ],
+        max_tokens: 8000,
+        temperature: 0.7,
+      }),
     });
 
-    const result = await model.generateContent(userMessage);
-    const response = await result.response;
-    let jsonText = response.text().trim();
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Groq API error ${response.status}: ${errText}`);
+    }
+
+    const data = await response.json();
+    let jsonText = data.choices[0].message.content.trim();
 
     // Remove markdown code blocks if present
     jsonText = jsonText.replace(/^```(?:json)?\n?/i, "").replace(/\n?```$/i, "");
