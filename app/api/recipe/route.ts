@@ -11,6 +11,13 @@ Kullanıcının arama terimi gerçek bir yemek, malzeme, mutfak tekniği veya bi
 - Bunun yerine SADECE boş bir JSON dizisi döndür: []
 Arama terimi tanınmayan, anlamsız veya mutfakla ilgisi olmayan bir kelimeyse boş dizi döndür.
 
+VARİYASYON KURALI (ÇOK ÖNEMLİ):
+Birden fazla tarif varyasyonu üretirken:
+- SADECE aranan yemeğin/malzemenin gerçekte var olan hazırlama yöntemlerini veya bölgesel versiyonlarını sun
+- Aranan terimi başka yemek türleriyle BİRLEŞTİREREK uydurma isimler YARATMA
+- Örnek: "hibeş" arandıysa → farklı hibeş tariflerini sun; "hibeş pilavı" veya "hibeş çorbası" gibi var olmayan yemekler TÜRETME
+- Yeterince varyasyon bulunamazsa daha az tarif döndür, asla hayali kombinasyonlar üretme
+
 Kurallar:
 - Tüm malzemelerde gram/ml ölçüsü kullan, asla "bir tutam" veya "biraz" gibi belirsiz ifade kullanma
 - Profesyonel mutfak terimleri kullan (brunoise, chiffonade, bain-marie vb.)
@@ -63,16 +70,17 @@ export async function POST(request: NextRequest) {
 
     const userMessage = `Şu arama terimi için profesyonel şef düzeyinde tarifler ara: "${query}"
 
-ÖNEMLİ: Önce bu arama teriminin gerçek bir yemek, malzeme, pişirme tekniği veya bilinen bir gıda maddesi olup olmadığını değerlendir.
-- Eğer terim tanınmayan, anlamsız veya uydurma bir kelimeyse: SADECE [] döndür, kesinlikle tarif üretme.
-- Eğer terim gerçek bir mutfak kavramıysa: aşağıdaki talimatları uygula.
+ÖNEMLİ:
+1. Önce bu terimin gerçek bir yemek, malzeme veya mutfak kavramı olup olmadığını değerlendir. Tanınmayan veya anlamsız bir kelimeyse SADECE [] döndür.
+2. Gerçek bir yemekse, SADECE o yemeğin gerçekte var olan versiyonlarını/tekniklerini sun. Arama terimini başka yemek türleriyle birleştirerek uydurma isimler (örn. "${query} çorbası", "${query} pilavı") ASLA türetme.
+3. Gerçek varyasyon bulunamazsa daha az tarif döndür.
 
 ${languageInstruction}
 ${cuisineInstruction}
 ${categoryInstruction}
 ${difficultyInstruction}
 
-${count} farklı profesyonel tarif varyasyonu sun. Her biri teknik veya köken açısından farklı olsun.
+En fazla ${count} farklı profesyonel tarif varyasyonu sun. Her biri gerçek ve doğrulanabilir olsun.
 SADECE geçerli bir JSON dizisi döndür, başka metin ekleme.`;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
