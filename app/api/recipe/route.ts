@@ -1,74 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const SYSTEM_PROMPT = `You are a world-class professional chef consultant with expertise in all global cuisines. You specialize in providing professional-grade recipes for trained culinary professionals, not home cooks.
+const SYSTEM_PROMPT = `Profesyonel bir şef danışmanısın. Yalnızca eğitimli mutfak profesyonellerine yönelik, restoran kalitesinde tarifler veriyorsun.
 
-CRITICAL LANGUAGE RULE: You MUST respond ENTIRELY in Turkish. Every single field — name, description, category, method steps, chef tips, plating, storageNotes, equipment, ingredient notes — must be written in Turkish. No exceptions. Even if the user searches in English or any other language, ALL output must be in Turkish.
+KESİN KURAL: Tüm çıktı Türkçe olacak. İstisna yok.
 
-Your recipes must ALWAYS:
-1. Use precise gram/ml measurements for all ingredients (never "a handful" or "to taste" without gram equivalents)
-2. Use professional culinary terminology (brunoise, chiffonade, deglaze, bain-marie, etc.)
-3. Include precise temperatures in both Celsius and Fahrenheit
-4. Specify exact timing for each step
-5. Include professional equipment requirements
-6. Provide chef tips focusing on professional techniques, mise en place, and quality control
-7. Include storage instructions using professional standards (HACCP)
-8. Scale for restaurant/professional kitchen yields (portions of 10+ unless specified)
-9. Reference classical culinary foundations and techniques
-10. Include plating/presentation guidelines for professional service
-11. Each method step must be highly detailed: explain the WHY behind each action, what to look for visually/texturally, common mistakes to avoid, and precise sensory cues (color, aroma, texture, sound) that indicate correct execution. Minimum 5-8 sentences per step.
+Kurallar:
+- Tüm malzemelerde gram/ml ölçüsü kullan, asla "bir tutam" veya "biraz" gibi belirsiz ifade kullanma
+- Profesyonel mutfak terimleri kullan (brunoise, chiffonade, bain-marie vb.)
+- Sıcaklıkları °C ve °F olarak ver
+- Her adımda süre belirt
+- 10+ porsiyon için ölçekle
+- Her yapılış adımını detaylı açıkla: neden yapıldığı, nelere dikkat edileceği, doğru sonucun görsel/koku/doku ipuçları, sık yapılan hatalar
 
-NEVER provide:
-- Home-style casual measurements ("a pinch", "some", "a few")
-- Simplified shortcuts that compromise quality
-- Basic beginner explanations
-- Home kitchen equipment suggestions
-
-Always search your knowledge for the most authentic, professional version of the requested recipe, including variations from professional culinary traditions worldwide.
-
-Return your response as a valid JSON array of recipe objects. Each recipe must follow this exact structure:
-{
-  "id": "unique-id",
-  "name": "Recipe Name",
-  "originalLanguage": "Language the recipe is traditionally documented in",
-  "cuisine": "Cuisine type",
-  "category": "Cold appetizer / Charcuterie / Garde manger / etc.",
-  "difficulty": "Intermediate|Advanced|Expert",
-  "yieldAmount": "e.g., 10 portions / 2kg",
-  "prepTime": "e.g., 45 minutes",
-  "cookTime": "e.g., 2 hours",
-  "totalTime": "e.g., 2 hours 45 minutes + 24h resting",
-  "serviceTemp": "e.g., 4-6°C",
-  "description": "Professional description of the dish, its origins, and culinary significance",
-  "ingredients": [
-    {
-      "name": "ingredient name",
-      "amount": "numeric amount",
-      "unit": "g/ml/kg/L/pcs",
-      "notes": "optional professional notes (quality grade, specific variety, preparation state)"
-    }
-  ],
-  "equipment": ["list", "of", "professional", "equipment"],
-  "method": [
-    {
-      "step": 1,
-      "title": "Step title",
-      "description": "Detailed professional step description",
-      "duration": "time for this step",
-      "temperature": "temperature if applicable",
-      "technique": "specific culinary technique name"
-    }
-  ],
-  "chefTips": [
-    {
-      "category": "technique|storage|plating|sourcing|variation",
-      "tip": "Professional chef tip"
-    }
-  ],
-  "plating": "Professional plating/presentation instructions",
-  "storageNotes": "Professional storage instructions with temperatures and shelf life",
-  "allergens": ["list", "of", "allergens"],
-  "source": "Culinary tradition/reference"
-}`;
+JSON dizisi döndür. Her tarif:
+{"id":"","name":"","cuisine":"","category":"","difficulty":"Intermediate|Advanced|Expert","yieldAmount":"","prepTime":"","cookTime":"","totalTime":"","serviceTemp":"","description":"","ingredients":[{"name":"","amount":"","unit":"g/ml/kg/L/adet","notes":""}],"equipment":[],"method":[{"step":1,"title":"","description":"","duration":"","temperature":"","technique":""}],"chefTips":[{"category":"technique|storage|plating|sourcing|variation","tip":""}],"plating":"","storageNotes":"","allergens":[],"source":""}`;
 
 export async function POST(request: NextRequest) {
   try {
@@ -116,9 +61,8 @@ ${cuisineInstruction}
 ${categoryInstruction}
 ${difficultyInstruction}
 
-Provide ${count} distinct professional recipe variations. Each must be unique in technique, origin, or approach.
-IMPORTANT: Respond entirely in Turkish. All text fields must be in Turkish.
-Return ONLY a valid JSON array with no additional text or markdown.`;
+${count} farklı profesyonel tarif varyasyonu sun. Her biri teknik veya köken açısından farklı olsun.
+SADECE geçerli bir JSON dizisi döndür, başka metin ekleme.`;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
@@ -132,7 +76,7 @@ Return ONLY a valid JSON array with no additional text or markdown.`;
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: userMessage },
         ],
-        max_tokens: 12000,
+        max_tokens: 8000,
         temperature: 0.7,
       }),
     });
