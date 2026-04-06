@@ -15,6 +15,7 @@ Your recipes must ALWAYS:
 8. Scale for restaurant/professional kitchen yields (portions of 10+ unless specified)
 9. Reference classical culinary foundations and techniques
 10. Include plating/presentation guidelines for professional service
+11. Each method step must be highly detailed: explain the WHY behind each action, what to look for visually/texturally, common mistakes to avoid, and precise sensory cues (color, aroma, texture, sound) that indicate correct execution. Minimum 5-8 sentences per step.
 
 NEVER provide:
 - Home-style casual measurements ("a pinch", "some", "a few")
@@ -131,7 +132,7 @@ Return ONLY a valid JSON array with no additional text or markdown.`;
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: userMessage },
         ],
-        max_tokens: 8000,
+        max_tokens: 12000,
         temperature: 0.7,
       }),
     });
