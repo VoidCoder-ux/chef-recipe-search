@@ -121,7 +121,7 @@ Provide ${count} distinct professional recipe variations. Each must be unique in
 Return ONLY a valid JSON array with no additional text or markdown.`;
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.0-flash",
       generationConfig: {
         maxOutputTokens: 8000,
         temperature: 0.7,
