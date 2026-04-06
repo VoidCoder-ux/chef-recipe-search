@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 const SYSTEM_PROMPT = `You are a world-class professional chef consultant with expertise in all global cuisines. You specialize in providing professional-grade recipes for trained culinary professionals, not home cooks.
 
+CRITICAL LANGUAGE RULE: You MUST respond ENTIRELY in Turkish. Every single field — name, description, category, method steps, chef tips, plating, storageNotes, equipment, ingredient notes — must be written in Turkish. No exceptions. Even if the user searches in English or any other language, ALL output must be in Turkish.
+
 Your recipes must ALWAYS:
 1. Use precise gram/ml measurements for all ingredients (never "a handful" or "to taste" without gram equivalents)
 2. Use professional culinary terminology (brunoise, chiffonade, deglaze, bain-marie, etc.)
@@ -114,6 +116,7 @@ ${categoryInstruction}
 ${difficultyInstruction}
 
 Provide ${count} distinct professional recipe variations. Each must be unique in technique, origin, or approach.
+IMPORTANT: Respond entirely in Turkish. All text fields must be in Turkish.
 Return ONLY a valid JSON array with no additional text or markdown.`;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
