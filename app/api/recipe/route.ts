@@ -1,9 +1,7 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest, NextResponse } from "next/server";
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 const SYSTEM_PROMPT = `You are a world-class professional chef consultant with expertise in all global cuisines. You specialize in providing professional-grade recipes for trained culinary professionals, not home cooks.
 
@@ -103,7 +101,9 @@ export async function POST(request: NextRequest) {
         ? `Target ${filters.difficulty} difficulty level.`
         : "";
 
-    const userMessage = `Search for professional chef-level recipes for: "${query}"
+    const userMessage = `${SYSTEM_PROMPT}
+
+Search for professional chef-level recipes for: "${query}"
 
 ${languageInstruction}
 ${cuisineInstruction}
@@ -113,24 +113,18 @@ ${difficultyInstruction}
 Provide ${count} distinct professional recipe variations. Each must be unique in technique, origin, or approach.
 Return ONLY a valid JSON array with no additional text or markdown.`;
 
-    const message = await client.messages.create({
-      model: "claude-3-5-sonnet-20241022",
-      max_tokens: 8000,
-      system: SYSTEM_PROMPT,
-      messages: [
-        {
-          role: "user",
-          content: userMessage,
-        },
-      ],
+    const model = genAI.getGenerativeModel({
+      model: "gemini-1.5-flash",
+      generationConfig: {
+        maxOutputTokens: 8000,
+        temperature: 0.7,
+      },
     });
 
-    const content = message.content[0];
-    if (content.type !== "text") {
-      throw new Error("Unexpected response type");
-    }
+    const result = await model.generateContent(userMessage);
+    const response = await result.response;
+    let jsonText = response.text().trim();
 
-    let jsonText = content.text.trim();
     // Remove markdown code blocks if present
     jsonText = jsonText.replace(/^```(?:json)?\n?/i, "").replace(/\n?```$/i, "");
 
@@ -146,7 +140,7 @@ Return ONLY a valid JSON array with no additional text or markdown.`;
       );
     }
     return NextResponse.json(
-      { error: "Failed to fetch recipes. Please try again." },
+      { error: `Failed to fetch recipes: ${error instanceof Error ? error.message : "Unknown error"}` },
       { status: 500 }
     );
   }
