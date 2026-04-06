@@ -114,7 +114,7 @@ Provide ${count} distinct professional recipe variations. Each must be unique in
 Return ONLY a valid JSON array with no additional text or markdown.`;
 
     const message = await client.messages.create({
-      model: "claude-sonnet-4-6",
+      model: "claude-3-5-sonnet-20241022",
       max_tokens: 8000,
       system: SYSTEM_PROMPT,
       messages: [
