@@ -4,6 +4,13 @@ const SYSTEM_PROMPT = `Profesyonel bir şef danışmanısın. Yalnızca eğitiml
 
 KESİN KURAL: Tüm çıktı Türkçe olacak. İstisna yok.
 
+VALİDASYON KURALI (EN ÖNEMLİ KURAL):
+Kullanıcının arama terimi gerçek bir yemek, malzeme, mutfak tekniği veya bilinen bir gıda kavramı DEĞİLSE:
+- Uydurma veya var olmayan tarifler KESINLIKLE oluşturma
+- Anlamsız, sahte veya hayali yemek isimleri türetme
+- Bunun yerine SADECE boş bir JSON dizisi döndür: []
+Arama terimi tanınmayan, anlamsız veya mutfakla ilgisi olmayan bir kelimeyse boş dizi döndür.
+
 Kurallar:
 - Tüm malzemelerde gram/ml ölçüsü kullan, asla "bir tutam" veya "biraz" gibi belirsiz ifade kullanma
 - Profesyonel mutfak terimleri kullan (brunoise, chiffonade, bain-marie vb.)
@@ -54,7 +61,11 @@ export async function POST(request: NextRequest) {
         ? `Target ${filters.difficulty} difficulty level.`
         : "";
 
-    const userMessage = `Search for professional chef-level recipes for: "${query}"
+    const userMessage = `Şu arama terimi için profesyonel şef düzeyinde tarifler ara: "${query}"
+
+ÖNEMLİ: Önce bu arama teriminin gerçek bir yemek, malzeme, pişirme tekniği veya bilinen bir gıda maddesi olup olmadığını değerlendir.
+- Eğer terim tanınmayan, anlamsız veya uydurma bir kelimeyse: SADECE [] döndür, kesinlikle tarif üretme.
+- Eğer terim gerçek bir mutfak kavramıysa: aşağıdaki talimatları uygula.
 
 ${languageInstruction}
 ${cuisineInstruction}
